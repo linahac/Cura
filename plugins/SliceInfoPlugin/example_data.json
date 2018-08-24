@@ -56,6 +56,20 @@
         }
     ],
     "quality_profile": "fast",
+    "user_modified_settings":
+    {
+        "global": {
+            "layer_height": 0.13
+        },
+        "extruders": {
+            "0": {
+                "wall_line_width": 0.354
+            },
+            "1": {
+                "infill_sparse_density": 40
+            }
+        }
+    },
     "models": [
         {
             "hash": "b72789b9beb5366dff20b1cf501020c3d4d4df7dc2295ecd0fddd0a6436df070",

@@ -95,6 +95,31 @@ class SliceInfo(QObject, Extension):
     def setSendSliceInfo(self, enabled: bool):
         Application.getInstance().getPreferences().setValue("info/send_slice_info", enabled)
 
+    def _getUserModifiedSettings(self) -> dict:
+        application = Application.getInstance()
+        machine_manager = application.getMachineManager()
+        global_stack = machine_manager.activeMachine
+
+        user_modified_settings = dict()
+
+        for stack in [global_stack] + list(global_stack.extruders.values()):
+            settings_dict = dict()
+
+            # Get all settings in user_changes and quality_changes
+            all_keys = stack.userChanges.getAllKeys() | stack.qualityChanges.getAllKeys()
+            for key in all_keys:
+                settings_dict[key] = stack.getProperty(key, "value")
+
+            if stack == global_stack:
+                user_modified_settings["global"] = settings_dict
+            else:
+                extruder_position = stack.getMetaDataEntry("position")
+                if "extruders" not in user_modified_settings:
+                    user_modified_settings["extruders"] = dict()
+                user_modified_settings["extruders"][extruder_position] = settings_dict
+
+        return user_modified_settings
+
     def _onWriteStarted(self, output_device):
         try:
             if not Application.getInstance().getPreferences().getValue("info/send_slice_info"):
@@ -163,6 +188,8 @@ class SliceInfo(QObject, Extension):
                 data["extruders"].append(extruder_dict)
 
             data["quality_profile"] = global_stack.quality.getMetaData().get("quality_type")
+
+            data["user_modified_settings"] = self._getUserModifiedSettings()
 
             data["models"] = []
             # Listing all files placed on the build plate
